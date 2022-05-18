@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <property name="root.level" value="INFO"/>
+
+    <!-- CONST: Logs dir -->
+    <property name="logs.dir" value="trino-query-log"/>
+    <property name="logs.history.dir" value="${logs.dir}/%d{yyyy-MM-dd}"/>
+
+    <!-- CONST: Appender name -->
+    <property name="logs.all.appender" value="ALL_LOGS"/>
+
+    <!-- CONST: Logs filename -->
+    <property name="logs.all.filename" value="trino-query-log.log"/>
+    <property name="logs.all.rolling.filename" value="trino-query-log.%d{yyyy-MM-dd}.%i.gz"/>
+
+    <!-- CONST: Logs pattern -->
+    <property name="logs.charset" value="UTF-8"/>
+    <property name="logs.file.pattern" value="%msg%n"/>
+
+    <!-- CONST: History config -->
+    <property name="logs.history.max_history" value="7"/>
+    <property name="logs.history.max_file_size" value="100MB"/>
+    <property name="logs.history.total_size_cap" value="1000MB"/>
+
+    <!-- CONST: All logs -->
+    <appender name="${logs.all.appender}" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logs.dir}/${logs.all.filename}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logs.history.dir}/${logs.all.rolling.filename}</fileNamePattern>
+            <maxFileSize>${logs.history.max_file_size}</maxFileSize>
+            <maxHistory>${logs.history.max_history}</maxHistory>
+            <totalSizeCap>${logs.history.total_size_cap}</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <charset>${logs.charset}</charset>
+            <pattern>${logs.file.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- CONST: root -->
+    <root level="${root.level}">
+        <appender-ref ref="${logs.all.appender}"/>
+    </root>
+</configuration>

@@ -1,0 +1,30 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>dist</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <files>
+        <file>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}.jar</source>
+            <outputDirectory>plugin/trino-query-log/</outputDirectory>
+        </file>
+    </files>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}/etc</directory>
+            <outputDirectory>etc/</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <dependencySets>
+        <dependencySet>
+            <scope>runtime</scope>
+            <excludes>
+                <exclude>${project.groupId}:${project.artifactId}:jar:*</exclude>
+            </excludes>
+            <outputDirectory>plugin/trino-query-log/</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+</assembly>
