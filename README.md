@@ -1,74 +1,57 @@
 
 # Overview
 
-Trino QueryLog is a Trino plugin for logging query events into separate log file.
+Trino Query Log is a Trino plugin for logging query events into separate log file.
 
 Its main purpose is to gather queries metadata and statistics as one event per line, so it can be easily collected by external software (e.g. Elastic FileBeat which will send data to Logstash/ElasticSearch/Kibana for storage/analysis).
 
+## Requirements
 
-## Build
-
-```
-mvn clean package dependency:copy-dependencies -DincludeScope=runtime
-```
+- Jdk: 11
+- Trino: 380
 
 ## Deploy
 
-### Copy artifacts
+>  Using `trino-query-log-0.4-dist.tar.gz` as an example
 
-Copy the following artifacts (after successful build) to the Trino plugin folder (`<path_to_presto>/plugin/presto-trino-log/`)
-```
-target/dependency/*.jar
-target/presto-trino-log-*.jar
-```
+### Download Binary File
+
+https://github.com/archongum/trino-query-log/releases
+
+### Unzip Plugin
+
+```bash
+tar xzvf trino-query-log-0.4-dist.tar.gz -C <TRINO_HOME>/plugin/ --strip-components=1 plugin/
+````
 
 ### Prepare configuration file
 
-Create `<path_to_presto>/etc/event-listener.properties` with the following required parameters, e.g.:
+Default configuration files:
 
-```
-event-listener.name=presto-trino-log
-presto.trino.log.log4j2.configLocation=<path_to_presto>/etc/trino.log-log4j2.xml
-```
+```bash
+tar xzvf trino-query-log-0.4-dist.tar.gz -C <TRINO_HOME>/etc/ --strip-components=1 etc/
+````
 
-#### Optional Parameters
+Parameters Explain:
 
-| Configuration                             | Default  | Description                | 
-| ----------------------------------------- | -------- | -------------------------- |
-| `presto.trino.log.log.queryCreatedEvent`   | **true** | Log Query Create event.    |
-| `presto.trino.log.log.queryCompletedEvent` | **true** | Log Query Completed event. |
-| `presto.trino.log.log.splitCompletedEvent` | **true** | Log Split Completed event. |
+| Configuration                                            | Default                                        | Description                                                                                 | 
+|----------------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------------------|
+| event-listener.name                                      | trino-query-log                                | String. Plugin Name, sample as plugin directory name                                        |
+| trino.query.log.config.fileLocation                      | etc/event-listener-trino-query-log-logback.xml | String. Logback configuration xml                                                           |
+| trino.query.log.log.splitCompletedEvent                  | true                                           | Boolean. See: [event-listener](https://trino.io/docs/current/develop/event-listener.html)   |
+| trino.query.log.log.queryCreatedEvent                    | true                                           | Boolean. See: [event-listener](https://trino.io/docs/current/develop/event-listener.html)   |
+| trino.query.log.log.queryCreatedEvent.queryTypePattern   | .*                                             | Regex. Only need these query types                                                          |
+| trino.query.log.log.queryCreatedEvent.queryMaxLength     | -1                                             | Integer. Max string length for query and preparedQuery                                      |
+| trino.query.log.log.queryCompletedEvent                  | true                                           | Boolean. See: [event-listener](https://trino.io/docs/current/develop/event-listener.html)   |
+| trino.query.log.log.queryCompletedEvent.queryTypePattern | .*                                             | Regex. Only need these query types                                                          |
+| trino.query.log.log.queryCompletedEvent.queryMaxLength   | -1                                             | Integer. Max string length for query and preparedQuery                                      |
+| trino.query.log.log.queryCompletedEvent.catalogPattern   | .*                                             | Regex. Only need these catalogs                                                             |
 
-* `presto.trino.log.log.queryCompletedEvent` can be used for post-hoc analysis of completed queries, as it contains all of the statistics of the query.
-* `presto.trino.log.log.splitCompletedEvent` can be used to track query progress.
-* `presto.trino.log.log.queryCreatedEvent` can be used to track long-running queries that are stuck without progress. 
 
-### Create log4j2 configuration file
+## Build from Source
 
-Prepare configuration file for logging query events, e.g. `<path_to_presto>/etc/trino-log-log4j2.xml`
-
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="warn" name="TrinoQueryLog" packages="">
-    <Appenders>
-        <RollingFile name="JsonRollingFile">
-            <FileName>/var/log/presto/presto-trino-log.log</FileName>
-            <FilePattern>/var/log/presto/%d{yyyy-MM-dd-hh}-%i.log</FilePattern>
-            <JsonLayout charset="UTF-8" includeStacktrace="false"
-                        compact="true" eventEol="true" objectMessageAsJsonObject="true"/>
-            <Policies>
-                <SizeBasedTriggeringPolicy size="10 MB"/>
-            </Policies>
-            <DefaultRolloverStrategy max="10"/>
-        </RollingFile>
-    </Appenders>
-
-    <Loggers>
-        <Root level="INFO">
-            <AppenderRef ref="JsonRollingFile"/>
-        </Root>
-    </Loggers>
-</Configuration>
+```bash
+mvn clean package
 ```
 
-Most of the configuration can be safely changed, but for easier consumption by FileBeat it is advised to leave at least JsonLayout and its parameters. 
+Tarball `target/trino-query-log-<version>-dist.tar.gz`
